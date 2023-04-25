@@ -1,0 +1,164 @@
+---
+title: "Mass Spectrometry Lemierre - Working document"
+author: "Gustav Torisson"
+format: pdf
+editor: visual
+---
+
+```{r, echo = F, message = F, warning=F}
+library(here)
+library(ggpubr)
+library(kableExtra)
+
+source(here("code", "new_script.R"))
+
+```
+
+### Descripton of raw data
+
+-   Raw data consists of a wide dataframe with 654 rows with protein names and 30 columns (1 with protein names and 29 samples.
+-   These were grouped into 8 with Lemierre syndrome ("LS"), 15 other sepsis ("Sepsis"), 3 Deep vein thrombosis ("DVT") and 3 other septic thromboses ("Other_thrombosis").
+-   There was one measurement per sample.
+-   Each data point represents an intensity measure from Mass pectrometry.
+
+### Initial data management
+
+-   Proteins with several names, separated with semicolon(;) were renamed to only the first name (left of semicolon)
+-   Datapoints labelled as "Filtered" were re-labelled as NA.
+-   Data was converted to "numeric" format, as it was "character" in Excel
+-   Datapoints labeeled as Nan (Not a Number) were also labelled as NA
+
+\newpage
+
+### Log2 transformation
+
+-   all measurements were log2 transformed
+
+```{r, echo = F, message = F, fig.width= 10, fig.height=5}
+#| fig-cap: "Density plots of raw and log2 transformed values"
+#| fig-cap-location: bottom
+
+print(ggarrange(raw_plot, log_plot, nrow = 1))
+
+```
+
+\newpage
+
+### Filtering
+
+-   Of 654 proteins, 329 (50.3%) had complete data, in all 29 samples
+-   200 proteins (30.6%) were missing in \> 9 (30% of all) samples.
+-   These were filtered, leaving 454 proteins
+
+```{r, echo = F, message = F, fig.width = 10, fig.height=5}
+#| fig-cap: "Missing structure before and after filterina"
+#| fig-cap-location: bottom
+
+print(ggarrange(plot_before_filt, plot_after_filt, nrow = 1))
+
+```
+
+\newpage
+
+### Normalisation
+
+-   all values were normalised by sample by subtracting the sample median from the Log2 intensity values
+
+```{r, echo = F, message = F, fig.width = 10, fig.height=5, fig.width= 8  }
+#| fig-cap: "Before and after by-sample normalisation."
+
+print(ggarrange(before_norm_plot, after_norm_plot, nrow = 1))
+
+```
+
+\newpage
+
+### Missing per sample and group
+
+-   there were most missing values in the DVT group, but differences were small
+-   All NAs (both "Filtered" and NaN) were considered to represent low intensities and to represent MNAR (Correct???)
+
+```{r, echo = F, message = F, fig.width = 5}
+#| fig-cap: "Valid measurements after filtering per sample and group"
+print(valid_plot)
+
+```
+
+\newpage
+
+### Imputation
+
+-   NAs were imputed using single imputation, assuming MNAR
+-   For each sample, the sample mean and sample sd were determined
+-   Then imputations were performed, using a random draw from a Gaussian distribution
+-   The mean for imputations was donwshifted with -1.8 sample sd and the width 0.3 \* sample sd
+
+```{r, echo =FALSE, message = FALSE, fig.height=4}
+#| fig-cap: "Distribution of imputed values."
+
+print(impute_plot)
+
+```
+
+\newpage
+
+### Differential expression
+
+-   454 t-tests (students t-test) were performed, one for each protein, between LS and Sepsis groups
+-   Results are presented as:
+    -   Log2FC = mean(log(LS)) - mean(log(Sepsis))
+    -   p values from t-test
+    -   q values using Benjamini-Hochberg corrections
+    -   FC(Fold change) = 2\^Log2FC
+    -   Values with Log2FC ± 1.0 and q value \< 0.05 were considered significant
+    -   number of imputed NAs (in LS and Sepsis groups)
+
+```{r, echo = F, message = F}
+#| tbl-cap: "Differential expression between LS and Sepsis."
+kable(table1, format = "markdown")
+
+```
+
+\newpage
+
+### Including LS vs VTE
+
+-   the proteins that were differentially expressed for LS vs Sepsis were also evaluated for differences between LS and VTE.
+
+```{r, echo = F}
+#| tbl-cap: "LS vs Sepsis (left, FC1, q1 and sign1) and LS vs VTE (right, FC2, q2, sign2)"
+kable(table3, format = "markdown")
+
+```
+
+\newpage
+
+### Volcano plot
+
+```{r, echo = F, message = F, fig.width=4}
+#| fig-cap: "Volcano plot. Proteins that are differentially expressed between LS and Sepsis = red"
+
+print(volcano_plot)
+```
+
+### Heatmap
+
+```{r, echo = F, message = F}
+print(heat_plot)
+
+```
+
+\newpage
+
+### KOMMENTARER TILL DAVID
+
+-   Jag fick 23 protein jmfrt med 25 i manuset. det är 3 av dina som inte är med (mer om det nedan) och sen har det tillkommit ett (A0A0C4DH33), detta har qval precis \< 0.05 och 5 imputationer så rätt känsligt för variationer i imputationen
+-   Jag gjorde volcano plotten med -log10 q värde istället för pvärde (känns mer rätt eftersom man kan sätta strecket på 1.3 för -log10), därför de skiljer sig på y-axeln.
+-   Nedan finns en tabell med de 25 proteiner som var signifikanta i din körning, de är sorterade i bokstavsordning
+-   3 st är inte med här men var med i manuset, det är
+    -   P05556 - som verkar imputationskänslig, varierar väldigt mkt
+    -   P07998 och Q08380 - som ligger väldigt nära 0.05 och därför blir känsliga för variation
+
+```{r, echo = F}
+kable(david_tbl, format = "markdown")
+```
