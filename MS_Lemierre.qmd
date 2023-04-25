@@ -1,5 +1,5 @@
 ---
-title: "Mass Spectrometry Lemierre - Working document"
+title: "Mass Spectrometry Lemierre - Supplementary plots"
 author: "Gustav Torisson"
 format: pdf
 editor: visual
@@ -10,7 +10,8 @@ library(here)
 library(ggpubr)
 library(kableExtra)
 
-source(here("code", "new_script.R"))
+source(here("code", "main_script.R"))
+source(here("code", "plots.R"))
 
 ```
 
@@ -19,14 +20,13 @@ source(here("code", "new_script.R"))
 -   Raw data consists of a wide dataframe with 654 rows with protein names and 30 columns (1 with protein names and 29 samples.
 -   These were grouped into 8 with Lemierre syndrome ("LS"), 15 other sepsis ("Sepsis"), 3 Deep vein thrombosis ("DVT") and 3 other septic thromboses ("Other_thrombosis").
 -   There was one measurement per sample.
--   Each data point represents an intensity measure from Mass pectrometry.
 
 ### Initial data management
 
 -   Proteins with several names, separated with semicolon(;) were renamed to only the first name (left of semicolon)
 -   Datapoints labelled as "Filtered" were re-labelled as NA.
--   Data was converted to "numeric" format, as it was "character" in Excel
--   Datapoints labeeled as Nan (Not a Number) were also labelled as NA
+-   Data was converted to "numeric" format, as it was "character" from the Excel import
+-   Datapoints labelled as Nan (Not a Number) were also labelled as NA
 
 \newpage
 
@@ -76,7 +76,7 @@ print(ggarrange(before_norm_plot, after_norm_plot, nrow = 1))
 ### Missing per sample and group
 
 -   there were most missing values in the DVT group, but differences were small
--   All NAs (both "Filtered" and NaN) were considered to represent low intensities and to represent MNAR (Correct???)
+-   All NAs were considered to represent low intensities and to represent MNAR (missing not at random)
 
 ```{r, echo = F, message = F, fig.width = 5}
 #| fig-cap: "Valid measurements after filtering per sample and group"
@@ -104,14 +104,13 @@ print(impute_plot)
 
 ### Differential expression
 
--   454 t-tests (students t-test) were performed, one for each protein, between LS and Sepsis groups
+-   454 t-tests (students t-test) were performed, one-at-a-time for each protein, between LS and Sepsis groups
 -   Results are presented as:
     -   Log2FC = mean(log(LS)) - mean(log(Sepsis))
     -   p values from t-test
     -   q values using Benjamini-Hochberg corrections
     -   FC(Fold change) = 2\^Log2FC
     -   Values with Log2FC ± 1.0 and q value \< 0.05 were considered significant
-    -   number of imputed NAs (in LS and Sepsis groups)
 
 ```{r, echo = F, message = F}
 #| tbl-cap: "Differential expression between LS and Sepsis."
@@ -127,6 +126,18 @@ kable(table1, format = "markdown")
 
 ```{r, echo = F}
 #| tbl-cap: "LS vs Sepsis (left, FC1, q1 and sign1) and LS vs VTE (right, FC2, q2, sign2)"
+kable(table2, format = "markdown")
+
+```
+
+\newpage
+
+### Including LS vs Other thromboses
+
+-   the proteins that were differentially expressed for LS vs Sepsis were also evaluated for differences between LS and Other thromboses - none were significantly differentially expressed.
+
+```{r, echo = F}
+#| tbl-cap: "LS vs Sepsis (left, FC1, q1 and sign1) and LS vs Other thromboses (right, FC2, q2, sign2)"
 kable(table3, format = "markdown")
 
 ```
@@ -144,21 +155,9 @@ print(volcano_plot)
 ### Heatmap
 
 ```{r, echo = F, message = F}
+#| fig-cap: heatmap of differentially expressed proteins between LS and Sepsis
 print(heat_plot)
 
 ```
 
-\newpage
 
-### KOMMENTARER TILL DAVID
-
--   Jag fick 23 protein jmfrt med 25 i manuset. det är 3 av dina som inte är med (mer om det nedan) och sen har det tillkommit ett (A0A0C4DH33), detta har qval precis \< 0.05 och 5 imputationer så rätt känsligt för variationer i imputationen
--   Jag gjorde volcano plotten med -log10 q värde istället för pvärde (känns mer rätt eftersom man kan sätta strecket på 1.3 för -log10), därför de skiljer sig på y-axeln.
--   Nedan finns en tabell med de 25 proteiner som var signifikanta i din körning, de är sorterade i bokstavsordning
--   3 st är inte med här men var med i manuset, det är
-    -   P05556 - som verkar imputationskänslig, varierar väldigt mkt
-    -   P07998 och Q08380 - som ligger väldigt nära 0.05 och därför blir känsliga för variation
-
-```{r, echo = F}
-kable(david_tbl, format = "markdown")
-```
