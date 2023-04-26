@@ -1,3 +1,6 @@
+# THIS IS SCRIPT FOR PLOTS
+# the main script needs to be run before this script - as several dfs from the main script are needed
+
 # LOG2 TRANSFORMATION PLOTS ----
 # first raw plot of original values
 raw_plot <- ggplot(df_long[which(!is.na(df_long$intensity)),], aes(x=intensity/10^6)) +
