@@ -62,8 +62,8 @@ diff_expression <- function(df, protein_names, test_value, group_var, grp1, grp2
   
   # further additions to results including q value and FC and significance
   results_df <- results_df %>% 
-    mutate(pval = as.numeric(format(round(pval,5), nsmall = 5)),
-           qval = round(p.adjust(results_df$pval, method = "BH"),4),
+    mutate(qval = round(p.adjust(results_df$pval, method = "BH"),4),
+           pval = as.numeric(format(round(pval,5), nsmall = 5)),
            FC = round(2^log2FC,2),
            sign = ifelse(((log2FC >= 1 |log2FC <=-1) & qval < 0.05), "+", "-"))
   

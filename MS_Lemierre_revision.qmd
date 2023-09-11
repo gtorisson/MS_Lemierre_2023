@@ -1,0 +1,136 @@
+---
+title: "Mass Spectrometry Lemierre - Supplementary plots"
+author: "Gustav Torisson"
+format: pdf
+editor: visual
+---
+
+```{r, echo = F, message = F, warning=F}
+library(here)
+library(ggpubr)
+library(kableExtra)
+
+source(here("code", "main_script_revision.R"))
+source(here("code", "plots.R"))
+
+```
+
+### Descripton of raw data
+
+-   Raw data consists of a wide dataframe with 654 rows with protein names and `r ncol(raw_data)` columns (1 with protein names and 23 samples).
+-   These were grouped into 8 with Lemierre syndrome ("LS"), 15 other sepsis ("Sepsis").
+-   There was one measurement per sample.
+
+### Initial data management
+
+-   Proteins with several names, separated with semicolon(;) were renamed to only the first name (left of semicolon)
+-   Datapoints labelled as "Filtered" were re-labelled as NA.
+-   Data was converted to "numeric" format, as it was "character" from the Excel import
+-   Datapoints labelled as Nan (Not a Number) were also labelled as NA
+
+\newpage
+
+### Log2 transformation
+
+-   all measurements were log2 transformed
+
+```{r, echo = F, message = F, fig.width= 10, fig.height=5}
+#| fig-cap: "Density plots of raw and log2 transformed values"
+#| fig-cap-location: bottom
+
+print(ggarrange(raw_plot, log_plot, nrow = 1))
+
+```
+
+\newpage
+
+### Filtering
+
+-   Of 654 proteins, 341 (52.1%) had complete data, in all 23 samples
+-   205 proteins (31.3%) were missing in \>= 7 (30% of all) samples.
+-   These were filtered, leaving 449 proteins
+
+```{r, echo = F, message = F, fig.width = 10, fig.height=5}
+#| fig-cap: "Missing structure before and after filterina"
+#| fig-cap-location: bottom
+
+print(ggarrange(plot_before_filt, plot_after_filt, nrow = 1))
+
+```
+
+\newpage
+
+### Normalisation
+
+-   all values were normalised by sample by subtracting the sample median from the Log2 intensity values
+
+```{r, echo = F, message = F, fig.width = 10, fig.height=5, fig.width= 8  }
+#| fig-cap: "Before and after by-sample normalisation."
+
+print(ggarrange(before_norm_plot, after_norm_plot, nrow = 1))
+
+```
+
+\newpage
+
+### Missing per sample and group
+
+-   All NAs were considered to represent low intensities and to represent MNAR (missing not at random)
+
+```{r, echo = F, message = F, fig.width = 5}
+#| fig-cap: "Valid measurements after filtering per sample and group"
+print(valid_plot)
+
+```
+
+\newpage
+
+### Imputation
+
+-   NAs were imputed using single imputation, assuming MNAR
+-   For each sample, the sample mean and sample sd were determined
+-   Then imputations were performed, using a random draw from a Gaussian distribution
+-   The mean for imputations was donwshifted with -1.8 sample sd and the width 0.3 \* sample sd
+
+```{r, echo =FALSE, message = FALSE, fig.height=4}
+#| fig-cap: "Distribution of imputed values."
+
+print(impute_plot)
+
+```
+
+\newpage
+
+### Differential expression
+
+-   449 t-tests (students t-test) were performed, one-at-a-time for each protein, between LS and Sepsis groups
+-   Results are presented as:
+    -   Log2FC = mean(log(LS)) - mean(log(Sepsis))
+    -   p values from t-test
+    -   q values using Benjamini-Hochberg corrections
+    -   FC(Fold change) = 2\^Log2FC
+    -   Values with Log2FC ± 1.0 and q value \< 0.05 were considered significant
+
+```{r, echo = F, message = F}
+#| tbl-cap: "Differential expression between LS and Sepsis."
+kable(table1, format = "markdown")
+
+```
+
+\newpage
+
+### Volcano plot
+
+```{r, echo = F, message = F, fig.width=4}
+#| fig-cap: "Volcano plot. Proteins that are differentially expressed between LS and Sepsis = red"
+
+print(volcano_plot)
+```
+
+### Heatmap
+
+```{r, echo = F, message = F}
+#| fig-cap: heatmap of differentially expressed proteins between LS and Sepsis
+print(heat_plot)
+
+```

@@ -27,22 +27,22 @@ log_plot <- ggplot(df_long[which(!is.na(df_long$intensity)),], aes(x=log2_intens
 # plot of NAs before filtering 
 plot_before_filt <- ggplot(data = (df_long %>% group_by(protein) %>% summarise(n = sum(is.na(intensity)))),
                            aes(x = n))+
-  geom_histogram( position = position_dodge(width = 0.5),
+  geom_histogram(bins = 24, position = position_dodge(width = 0.5),
                   col = "dark blue", fill = "light blue", linewidth = 0.4)+
   ggtitle("Missing structure before filtering")+
   labs(x = "missing proteins",
        y = "samples (count)")+
-  scale_x_continuous(breaks = c(0:29))+
+  scale_x_continuous(breaks = c(0:23))+
   gt_plot_theme
 
 # plot of NAs after filtering
 plot_after_filt <- ggplot(data = (df_long_filt %>% group_by(protein) %>% summarise(n = sum(is.na(intensity)))),
                           aes(x = n))+
-  geom_histogram(bins = 9, col = "dark blue", fill = "light blue")+
+  geom_histogram(bins = 7, col = "dark blue", fill = "light blue")+
   ggtitle("Missing structure after filtering")+
   labs(x = "missing proteins",
        y = "samples (count)")+
-  scale_x_continuous(breaks = c(0:9))+
+  scale_x_continuous(breaks = c(0:6))+
   gt_plot_theme
 
 # NORMALISATION PLOTS ----
