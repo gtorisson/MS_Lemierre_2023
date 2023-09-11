@@ -1,6 +1,6 @@
 There are four scripts:
 - functions.R - custom functions
-- main_script.R - the main script for the project
+- main_script_revision.R - the main script for the project, after revisions Sep 11 2023
 - plots.R - script for all plots, including supplemental
 - output.R - script for pdf output for plots to be included in paper
 
