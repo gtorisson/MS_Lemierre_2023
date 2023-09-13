@@ -140,7 +140,7 @@ print(heat_plot)
 
 \newpage
 ```{r, echo = F, message = F}
-#| tbl-cap: Table underlying the heatmap above
+#| tbl-cap: Table underlying the heatmap above. LS and Sepsis are mean normalized log2-transformed intensities
 kable(heat_plot_table, format = "markdown")
 
 ```

@@ -144,4 +144,8 @@ heat_plot <- ggplot(preplot, aes(x = group, y = fct_rev(name)))+
   gt_plot_theme
 
 heat_plot_table[,c(2,3)] <- round(heat_plot_table[,c(2,3)],2)
+heat_plot_table <- heat_plot_table %>%
+  rename(protein_id = protein, protein_name = name) %>%
+  select(protein_id, protein_name, LS, Sepsis)
+
 
