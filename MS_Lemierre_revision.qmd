@@ -131,8 +131,8 @@ print(volcano_plot)
 
 ### Heatmap
 
-```{r, echo = F, message = F}
-#| fig-cap: heatmap of differentially expressed proteins between LS and Sepsis
+```{r, echo = F, message = F, fig.width=6.5}
+#| fig-cap: heatmap of differentially expressed proteins between LS and Other severe infections
 print(heat_plot)
 
 
