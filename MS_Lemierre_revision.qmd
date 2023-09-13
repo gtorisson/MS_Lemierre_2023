@@ -127,10 +127,20 @@ kable(table1, format = "markdown")
 print(volcano_plot)
 ```
 
+\newpage
+
 ### Heatmap
 
 ```{r, echo = F, message = F}
 #| fig-cap: heatmap of differentially expressed proteins between LS and Sepsis
 print(heat_plot)
+
+
+```
+
+\newpage
+```{r, echo = F, message = F}
+#| tbl-cap: Table underlying the heatmap above
+kable(heat_plot_table, format = "markdown")
 
 ```

@@ -113,23 +113,28 @@ volcano_plot <- ggplot(preplot, aes(x = log2FC,y = -log10(qval), color = sign)) 
 # HEATMAP ---
 # heatmap preprocessing, obtaining protein names for significant
 sign_protein_names <- data.frame(protein_id = table1[,"protein"],
-                                 protein_name = sub("\\(.*", "", (GetNamesTaxa(table1[,"protein"]))$Protein.names))
+                                 protein_name = sub("\\(.*", "", (GetNamesTaxa(table1[,"protein"]))$Protein.names)) %>%
+  arrange(desc(protein_id))
+
+
 
 # creating a preplot df
 preplot <- df_long_imp %>% 
   filter(protein %in% sign_protein_names$protein_id,
          group %in% c("LS", "Sepsis")) %>% 
   group_by(protein, group) %>% 
-  summarise(mean_intensity = mean(norm_log2_intensity_imputed))
+  summarise(mean_intensity = mean(norm_log2_intensity_imputed)) 
 
 # need to go via a wide dataframe to order proteins correctly
-temp <- pivot_wider(preplot, id_cols = protein, names_from=group, values_from=mean_intensity)%>% 
-  arrange(desc(LS))
-temp$name <- sign_protein_names$protein_name
-temp$name <- factor(temp$name, levels = temp$name)
+heat_plot_table <- pivot_wider(preplot, id_cols = protein, names_from=group, values_from=mean_intensity) %>%
+  arrange(desc(protein))
+heat_plot_table$name <- sign_protein_names$protein_name
+heat_plot_table <- heat_plot_table %>% arrange(desc(LS))
+
+heat_plot_table$name <- factor(heat_plot_table$name, levels = heat_plot_table$name)
 # then to long df again
-preplot <- pivot_longer(temp, cols = 2:3, names_to = "group", values_to = "mean_intensity") %>% 
-  mutate(group = ifelse(group == "Sepsis", "Other severe infections", "Lemierre´s disease"))
+preplot <- pivot_longer(heat_plot_table, cols = 2:3, names_to = "group", values_to = "mean_intensity") %>% 
+  mutate(group = ifelse(group == "Sepsis", "Other severe infections", "Lemierre´s syndrome"))
 
 # this is the heatmap plot code
 heat_plot <- ggplot(preplot, aes(x = group, y = fct_rev(name)))+
@@ -138,5 +143,5 @@ heat_plot <- ggplot(preplot, aes(x = group, y = fct_rev(name)))+
   labs(y = NULL, x = NULL)+
   gt_plot_theme
 
-
+heat_plot_table[,c(2,3)] <- round(heat_plot_table[,c(2,3)],2)
 
